@@ -3,7 +3,8 @@ docker buildx use mybuilder
 
 docker login
 
-docker buildx build --push --platform linux/amd64,linux/arm64 --tag urbancompasspony/domain-teste .
+docker buildx build --push --platform linux/amd64,linux/arm64 --tag urbancompasspony/domain .
 
+old:
 docker buildx build --local -t urbancompasspony/domain-teste .
 docker push urbancompasspony/domain-teste
