@@ -1,39 +1,17 @@
 #!/bin/bash
-
-# Aguarda o MongoDB estar pronto
-until mongosh --eval "print(\"waited for connection\")"
-do
-    sleep 2
-done
-
-# Cria o usuário unifi com as permissões necessárias
-mongosh <<EOF
-use admin
-
-// Cria o usuário unifi com permissões completas nos databases necessários
+if which mongosh > /dev/null 2>&1; then
+  mongo_init_bin='mongosh'
+else
+  mongo_init_bin='mongo'
+fi
+"${mongo_init_bin}" <<EOF
+use ${MONGO_AUTHSOURCE}
+db.auth("${MONGO_INITDB_ROOT_USERNAME}", "${MONGO_INITDB_ROOT_PASSWORD}")
 db.createUser({
-  user: "unifi",
-  pwd: "$MONGO_PASS",
+  user: "${MONGO_USER}",
+  pwd: "${MONGO_PASS}",
   roles: [
-    { role: "dbOwner", db: "unifi" },
-    { role: "dbOwner", db: "unifi_stat" }, 
-    { role: "dbOwner", db: "unifi_audit" },
-    { role: "readWrite", db: "admin" }
+    { db: "${MONGO_DBNAME}", role: "dbOwner" },
+    { db: "${MONGO_DBNAME}_stat", role: "dbOwner" }
   ]
 })
-
-// Verifica se o usuário foi criado corretamente
-print("Usuário unifi criado com sucesso")
-
-// Cria os databases vazios para garantir que existam
-use unifi
-db.createCollection("dummy")
-
-use unifi_stat  
-db.createCollection("dummy")
-
-use unifi_audit
-db.createCollection("dummy")
-
-print("Databases unifi, unifi_stat e unifi_audit criados")
-EOF
