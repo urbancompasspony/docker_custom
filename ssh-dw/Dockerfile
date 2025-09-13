@@ -1,4 +1,5 @@
 FROM ubuntu:22.04
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 ADD dwagent.sh /dwagent.sh
@@ -13,8 +14,6 @@ RUN apt install -y wget curl sudo sshfs cifs-utils nano openssh-server && \
 
 RUN useradd -rm -d /home/ubuntu -s /bin/bash -u 1000 ubuntu
 
-RUN echo 'ubuntu ALL=(ALL) NOPASSWD: /usr/local/bin/chroot-host.sh' >> /etc/sudoers
-
 RUN mkdir /run/sshd
 RUN service ssh start
 RUN chmod +x /entrypoint.sh
@@ -23,8 +22,19 @@ RUN chmod 755 /entrypoint.sh
 RUN cat > /usr/local/bin/chroot-host.sh << 'EOF' && \
     chmod +x /usr/local/bin/chroot-host.sh
 #!/bin/bash
-echo "=== ACESSO AO SISTEMA HOST ==="
-echo "Você está entrando no sistema host via chroot."
+echo "=== AUTENTICAÇÃO PARA ACESSO AO HOST ==="
+echo -n "Digite a senha de acesso ao host: "
+read -s HOST_ACCESS_PASSWORD
+echo
+
+# Verificar senha (pode ser passada como ENV também)
+if [ "${HOST_ACCESS_PASSWORD}" != "${HOST_PASSWORD:-defaulthostpass}" ]; then
+    echo "❌ Senha incorreta!"
+    exit 1
+fi
+
+echo "✅ Acesso autorizado!"
+echo "=== ENTRANDO NO SISTEMA HOST ==="
 echo "Use com responsabilidade!"
 echo "======================================"
 exec chroot /host /bin/bash
