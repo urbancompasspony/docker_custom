@@ -1,3 +1,5 @@
+OBS: DWSERVICE É ROOT POR PADRÃO!
+
 docker buildx create --name mybuilder
 
 docker buildx use mybuilder
